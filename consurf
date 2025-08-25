@@ -510,7 +510,8 @@ if ($VARS{running_mode} eq "_mode_pdb_no_msa" or $VARS{running_mode} eq "_mode_n
         $config->val( 'params', 'BLAST_MAX_HOMOLOGUES_TO_DISPLAY' );
 
 	# USER CAN SPECIFY THE DB TO USE HERE!!!!
-    $VARS{protein_db} = $config->val( 'databases', 'SWISSPROT_DB' );
+    #$VARS{protein_db} = $config->val( 'databases', 'SWISSPROT_DB' );
+    $VARS{protein_db} = "/home/ubuntu/youcai/ConSurf/databases/uniprot_trembl.fasta";
     # if ($FORM{database} eq "SWISS-PROT"){
     #     $VARS{protein_db} = CONSURF_CONSTANTS::SWISSPROT_DB;}
     # else{
@@ -904,8 +905,9 @@ sub run_blast{
         }
     }
 
-	print "{protein_db}\n";
+	print "$VARS{protein_db}\n";
     my $cmd = $config->val( 'programs', 'BLASTPGP' )." -i $VARS{working_dir}/$VARS{protein_seq} -e $FORM{ESCORE} -d $VARS{protein_db} -o $VARS{working_dir}/$VARS{BLAST_out_file} -j $FORM{iterations} -v $VARS{max_homologues_to_display} -b $VARS{max_homologues_to_display} -F F";
+    print "$cmd\n";
     print LOG "run_blast : running: $cmd\n";
 
     $cmd .= " 2>&1 1>/dev/null" if ($quiet);
@@ -1244,7 +1246,7 @@ sub get_seqres_atom_seq{
     # extract the sequences from the pdbParser
     my $seqres = "";
     my $atom = "";
-    if (defined (@{$VARS{pdb_file}->{SEQRES_chains}})){
+    if (@{$VARS{pdb_file}->{SEQRES_chains}}){
         foreach my $chainid (@{$VARS{pdb_file}->{SEQRES_chains}}){
             if (($chainid eq " " and $FORM{chain} =~ /none/i) or $chainid =~ /$FORM{chain}/i){
                 $seqres = $VARS{pdb_file}->get("SEQRES$chainid.raw");
@@ -1252,7 +1254,7 @@ sub get_seqres_atom_seq{
             }
         }
     }
-    if (defined (@{$VARS{pdb_file}->{ATOM_chains}})){
+    if (@{$VARS{pdb_file}->{ATOM_chains}}){
         foreach my $chainid (@{$VARS{pdb_file}->{ATOM_chains}}){
             if (($chainid eq " " and $FORM{chain} =~ /none/i) or $chainid =~ /$FORM{chain}/i){
                 $atom = $VARS{pdb_file}->get("ATOM$chainid.raw");
@@ -1264,7 +1266,7 @@ sub get_seqres_atom_seq{
         &exit_on_error('user_error',"The protein sequence for chain '$FORM{chain}' was not found in SEQRES nor ATOM fields in the PDB file.");
     }
     # output a message in case there is no seqres relevant sequence, but there are other chains.
-    if ($seqres eq "" and (defined (@{$VARS{pdb_file}->{SEQRES_chains}}))){
+    if ($seqres eq "" and (@{$VARS{pdb_file}->{SEQRES_chains}})){
         my $all_chains = "";
         foreach my $chainid (@{$VARS{pdb_file}->{SEQRES_chains}}){
            if ($chainid eq " ") {$chainid = "NONE";}
@@ -1866,3 +1868,4 @@ c. IN NO EVENT SHALL LICENSEE BE LIABLE TO LICENSOR FOR ANY LOST PROFITS, LOST O
 rate4site(1), clustalw(1), muscle(1)
 
 =cut
+
